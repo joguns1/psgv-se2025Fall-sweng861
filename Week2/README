@@ -1,0 +1,33 @@
+Social Media Login with Google & LinkedIn
+
+This project implements a Flask-based social media login system using OAuth 2.0.
+Users can log in via Google or LinkedIn, and their information is stored in a SQLite database.
+
+Features
+
+Google & LinkedIn login via OAuth 2.0
+Secure session management with Flask
+Stores user data (name, email, provider, social ID) in SQLite
+Error handling and logging for failed logins
+
+Setup Instructions
+
+1. Clone Repo
+2. Create a Virtual Enviornment
+3. Install Dependencies
+   Flask → Web framework for routing and rendering pages.
+   Flask-SQLAlchemy → ORM for handling the SQLite database.
+   Authlib → For OAuth 2.0 authentication with Google and LinkedIn.
+4. Create .env file to hold all your client IDs and secrets
+5. Run the application and visit http://127.0.0.1:5000
+
+Authentication Flow
+
+User selects Google or LinkedIn login.
+Redirected to provider’s login page.
+User authenticates and provider redirects back.
+Flask exchanges code for tokens.
+User profile data retrieved and stored in DB.
+User is logged in and redirected to their profile.
+
+

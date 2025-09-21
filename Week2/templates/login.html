@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login with Social Media</h2>
+        <div class="social-login-buttons">
+            <!-- Google Login -->
+            <a href="{{ url_for('login', provider='google') }}">
+                <img src="{{ url_for('static', filename='images/google-logo.png') }}" alt="Google Logo">
+                Login with Google
+            </a>
+
+            <!-- LinkedIn Login -->
+            <a href="{{ url_for('login', provider='linkedin') }}">
+                <img src="{{ url_for('static', filename='images/linkedin-logo.png') }}" alt="LinkedIn Logo">
+                Login with LinkedIn
+            </a>
+        </div>
+    </div>
+</body>
+</html>
