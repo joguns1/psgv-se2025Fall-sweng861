@@ -28,7 +28,8 @@ class CovidStat(db.Model):
         return {
             "id": self.id,
             "country": self.country,
-            "confirmed": self.confirmed,
+            "cases": self.cases,
             "deaths": self.deaths,
             "recovered": self.recovered,
+            "active": self.active
         }

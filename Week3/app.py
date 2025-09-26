@@ -131,7 +131,7 @@ def update_covid(id):
 
 # Delete a COVID record (Admin only)
 @app.route("/covid/<int:id>", methods=["DELETE"])
-# @role_required("admin")
+@role_required("admin")
 def delete_covid(id):
     stat = CovidStat.query.get_or_404(id)
     db.session.delete(stat)

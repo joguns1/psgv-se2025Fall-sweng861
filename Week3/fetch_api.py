@@ -42,5 +42,6 @@ def fetch_and_store_covid_data():
         print(f"Error fetching/storing COVID data: {e}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     fetch_and_store_covid_data()
+
