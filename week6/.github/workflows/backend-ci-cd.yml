@@ -1,0 +1,71 @@
+name: backend-ci-cd
+on:
+  push:
+    paths:
+      - 'week5/backend/**'
+      - 'week6/docker/backend.Dockerfile'
+      - 'k8s/backend-*.yaml'
+      - '.github/workflows/backend-ci-cd.yml'
+  workflow_dispatch:
+
+jobs:
+  build-test-push-deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      ECR_REPO:  ${{ secrets.ECR_REPO_BACKEND }}   # e.g. myapp-backend
+      CLUSTER:   ${{ secrets.EKS_CLUSTER_NAME }}   # e.g. week6
+      IMAGE_URI: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPO_BACKEND }}:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+
+      - name: Install & test backend
+        working-directory: week5/backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+          pytest -q --cov=. --cov-report=xml
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build & push image
+        run: |
+          docker build -f week6/docker/backend.Dockerfile -t $IMAGE_URI .
+          docker push $IMAGE_URI
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+        with: { version: 'latest' }
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name "$CLUSTER" --region "$AWS_REGION"
+
+      - name: Apply namespace & secrets (if already created, this is harmless)
+        run: |
+          kubectl apply -f k8s/namespace.yaml
+          # Create or update secrets securely via `kubectl create secret ...` in your environment;
+          # don't commit real secrets. Example:
+          # kubectl -n week6 create secret generic backend-secrets \
+          #   --from-literal=JWT_SECRET=${{ secrets.JWT_SECRET }} \
+          #   --from-literal=DATABASE_URL=${{ secrets.DATABASE_URL }} \
+          #   --from-literal=CORS_ORIGINS=${{ secrets.CORS_ORIGINS }} --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply backend manifests
+        run: |
+          kubectl apply -f k8s/backend-deployment.yaml
+          kubectl apply -f k8s/backend-service.yaml
+          kubectl -n week6 set image deployment/backend backend=$IMAGE_URI
+          kubectl -n week6 rollout status deployment/backend
