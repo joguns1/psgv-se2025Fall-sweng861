@@ -1,25 +1,24 @@
-# Use Node.js for building
-FROM node:18-alpine AS build
+# Step 1: Build the React app
+FROM node:18 AS build
 
 WORKDIR /app
 
-# Copy package files first for caching
-COPY package*.json ./
+# Copy package.json and install dependencies
+COPY package.json package-lock.json ./
+RUN npm install
 
-# Install dependencies
-RUN npm install --legacy-peer-deps
-
-# Copy rest of the frontend code
+# Copy the rest of the app and build
 COPY . .
-
-# Set environment for React build
-ENV NODE_ENV=production
-
-# Build React app
 RUN npm run build
 
-# Serve with Nginx
+# Step 2: Serve with Nginx
 FROM nginx:alpine
+
+# Copy the React build to Nginx's html folder
 COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
 EXPOSE 80
+
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
