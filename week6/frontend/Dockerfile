@@ -1,23 +1,25 @@
-# Use Node.js for building the frontend
+# Use Node.js for building
 FROM node:18-alpine AS build
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files first for caching
 COPY package*.json ./
-RUN npm install
 
-# Copy the rest of the frontend source code
+# Install dependencies
+RUN npm install --legacy-peer-deps
+
+# Copy rest of the frontend code
 COPY . .
 
-# Build the frontend for production
+# Set environment for React build
+ENV NODE_ENV=production
+
+# Build React app
 RUN npm run build
 
-# Serve the build using Nginx
+# Serve with Nginx
 FROM nginx:alpine
 COPY --from=build /app/build /usr/share/nginx/html
-
-# Expose port 80
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]
