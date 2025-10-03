@@ -26,10 +26,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install & test backend
-        working-directory: week5/backend
+        working-directory: week6/backend
         run: |
           python -m pip install --upgrade pip
-          pip install -r ../../week6/backend/requirements.txt
+          pip install -r requirements.txt
           pip install pytest pytest-cov
           pytest -q --maxfail=1 --disable-warnings --cov=../../Week3 --cov-report=xml
 
