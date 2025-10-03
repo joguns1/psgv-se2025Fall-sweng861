@@ -1,24 +1,23 @@
-# backend/Dockerfile
+# Use Node.js for building the frontend
+FROM node:18-alpine AS build
 
-FROM python:3.10-slim
-
-# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
 
-# Install Python dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy backend code
+# Copy the rest of the frontend source code
 COPY . .
 
-# Expose Flask port
-EXPOSE 5000
+# Build the frontend for production
+RUN npm run build
 
-# Run the Flask app
-CMD ["python", "app.py"]
+# Serve the build using Nginx
+FROM nginx:alpine
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
