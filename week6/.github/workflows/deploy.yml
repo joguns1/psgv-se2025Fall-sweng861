@@ -3,78 +3,92 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main   # Runs on pushes to main branch
   pull_request:
 
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
 
+    env:
+      REGISTRY: docker.io
+      DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASSWORD }}
+      KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+
     steps:
-      # Checkout repo
-      - name: Checkout Code
+      # 1. Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node.js for frontend
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # 2. Set up Docker
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
         with:
-          node-version: 18
+          username: ${{ env.DOCKER_USER }}
+          password: ${{ env.DOCKER_PASS }}
 
-      # Install & test frontend
-      - name: Frontend Install & Test
-        working-directory: ./frontend
+      # 3. Build Backend
+      - name: Build Backend Docker image
         run: |
-          npm install
-          npm test -- --watchAll=false
+          cd backend
+          docker build -t $REGISTRY/${{ env.DOCKER_USER }}/week6-backend:latest .
 
-      # Setup Python for backend
-      - name: Setup Python
+      # 4. Build Frontend
+      - name: Build Frontend Docker image
+        run: |
+          cd frontend
+          docker build -t $REGISTRY/${{ env.DOCKER_USER }}/week6-frontend:latest .
+
+      # 5. Push both images
+      - name: Push Docker images
+        run: |
+          docker push $REGISTRY/${{ env.DOCKER_USER }}/week6-backend:latest
+          docker push $REGISTRY/${{ env.DOCKER_USER }}/week6-frontend:latest
+
+      # 6. Install dependencies for testing
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
-      # Install & test backend
-      - name: Backend Install & Test
-        working-directory: ./backend
+      - name: Install backend test dependencies
         run: |
+          cd backend
           pip install -r requirements.txt
+          pip install pytest pytest-cov requests-mock
+
+      - name: Run backend tests
+        run: |
+          cd backend
           pytest --maxfail=1 --disable-warnings --cov=.
 
-      # Login to DockerHub
-      - name: DockerHub Login
-        uses: docker/login-action@v3
+      - name: Install Node.js
+        uses: actions/setup-node@v4
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          node-version: "20"
 
-      # Build & push backend image
-      - name: Build & Push Backend
+      - name: Install frontend test dependencies
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:latest ./backend
-          docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+          cd frontend
+          npm install
 
-      # Build & push frontend image
-      - name: Build & Push Frontend
+      - name: Run frontend tests
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest ./frontend
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+          cd frontend
+          npm test -- --watchAll=false
 
-      # Setup kubectl
-      - name: Setup kubectl
+      # 7. Deploy to Kubernetes
+      - name: Set up kubectl
         uses: azure/setup-kubectl@v4
         with:
-          version: 'latest'
+          version: "v1.32.2"
 
-      # Setup Kubeconfig (saved in GitHub Secrets)
-      - name: Configure kubeconfig
+      - name: Configure Kubeconfig
         run: |
           mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+          echo "${{ env.KUBE_CONFIG }}" > ~/.kube/config
 
-      # Deploy to Kubernetes
       - name: Deploy to Kubernetes
         run: |
-          kubectl apply -f week6/k8s/namespace.yaml
-          kubectl apply -f week6/k8s/backend-deployment.yaml
-          kubectl apply -f week6/k8s/frontend-deployment.yaml
+          kubectl apply -f week6/k8s/
