@@ -31,7 +31,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r ../../week6/backend/requirements.txt
           pip install pytest pytest-cov
-          pytest -q --maxfail=1 --disable-warnings --cov=../../Week3 --cov-report=xml
+          pytest --maxfail=1 --disable-warnings --cov=../../Week3 --cov-report=xml
 
       # Login to Docker
       - name: Docker Login
