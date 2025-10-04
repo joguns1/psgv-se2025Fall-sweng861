@@ -98,8 +98,8 @@ function Login() {
 
       {userInfo && (
         <div style={{ marginTop: "1rem", color: "green" }}>
-          <p>✅ Logged in as: {userInfo.id}</p>
-          <p>🔑 Role: {userInfo.role}</p>
+          <p>Logged in as: {userInfo.id}</p>
+          <p>Role: {userInfo.role}</p>
         </div>
       )}
     </div>
