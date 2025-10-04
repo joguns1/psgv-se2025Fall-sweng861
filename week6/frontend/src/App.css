@@ -1,0 +1,42 @@
+/* General container */
+.login-container {
+  max-width: 400px;
+  margin: auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* Inputs */
+.login-container input {
+  width: 90%;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+/* Buttons */
+.login-container button {
+  margin: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+/* User info block */
+.user-info {
+  margin-top: 1rem;
+  color: green;
+}
+
+/* Responsive stacking */
+@media (max-width: 600px) {
+  .login-container {
+    width: 95%;
+    padding: 0.5rem;
+  }
+  .login-container input,
+  .login-container button {
+    width: 100%;
+    margin: 0.25rem 0;
+  }
+}
