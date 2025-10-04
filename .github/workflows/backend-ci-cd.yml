@@ -1,4 +1,4 @@
-name: backend-ci-cd
+name: fullstack-ci-cd
 
 on:
   push:
@@ -20,7 +20,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Setup Python for backend tests
+      # ----------------------
+      # Backend tests
+      # ----------------------
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -31,22 +33,42 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r ../../week6/backend/requirements.txt
           pip install pytest pytest-cov
-          pytest -q --maxfail=1 --disable-warnings --cov=. --cov-report=xml
+          pytest -q --maxfail=1 --disable-warnings --cov=../../Week3 --cov-report=xml
 
-      # Login to Docker
+      # ----------------------
+      # Frontend tests
+      # ----------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Install & test frontend
+        working-directory: week6/frontend
+        run: |
+          npm install
+          npm test -- --watchAll=false
+
+      # ----------------------
+      # Docker login
+      # ----------------------
       - name: Docker Login
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Build backend image
+      # ----------------------
+      # Build & push backend
+      # ----------------------
       - name: Build & Push Backend
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/week6-backend:latest week6/backend
           docker push ${{ secrets.DOCKER_USERNAME }}/week6-backend:latest
 
-      # Build frontend image
+      # ----------------------
+      # Build & push frontend
+      # ----------------------
       - name: Build & Push Frontend
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/week6-frontend:latest week6/frontend
