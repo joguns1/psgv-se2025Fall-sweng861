@@ -8,7 +8,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test \"../../week5/frontend/src/tests/**/*.{js,jsx,ts,tsx}\" --env=jsdom --watchAll=false",
+    "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
   "dependencies": {
