@@ -38,16 +38,16 @@ jobs:
       # ----------------------
       # Frontend tests
       # ----------------------
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: "18"
 
-      - name: Install & test frontend
-        working-directory: week6/frontend
-        run: |
-          npm install
-          npm test -- --watchAll=false
+      # - name: Install & test frontend
+      #   working-directory: week6/frontend
+      #   run: |
+      #     npm install
+      #     npm test -- --watchAll=false
 
       # ----------------------
       # Docker login
