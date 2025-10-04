@@ -3,7 +3,7 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main   # Runs on pushes to main branch
+      - main # Runs on pushes to main branch
   pull_request:
 
 jobs:
@@ -30,53 +30,34 @@ jobs:
 
       # 3. Build Backend
       - name: Build Backend Docker image
+        working-directory: week6/backend
         run: |
-          cd backend
           docker build -t $REGISTRY/${{ env.DOCKER_USER }}/week6-backend:latest .
 
       # 4. Build Frontend
       - name: Build Frontend Docker image
+        working-directory: week6/frontend
         run: |
-          cd frontend
           docker build -t $REGISTRY/${{ env.DOCKER_USER }}/week6-frontend:latest .
 
-      # 5. Push both images
-      - name: Push Docker images
-        run: |
-          docker push $REGISTRY/${{ env.DOCKER_USER }}/week6-backend:latest
-          docker push $REGISTRY/${{ env.DOCKER_USER }}/week6-frontend:latest
-
       # 6. Install dependencies for testing
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
-
       - name: Install backend test dependencies
+        working-directory: week6/backend
         run: |
-          cd backend
           pip install -r requirements.txt
           pip install pytest pytest-cov requests-mock
 
       - name: Run backend tests
-        run: |
-          cd backend
-          pytest --maxfail=1 --disable-warnings --cov=.
-
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
+        working-directory: week6/backend
+        run: pytest --maxfail=1 --disable-warnings --cov=.
 
       - name: Install frontend test dependencies
-        run: |
-          cd frontend
-          npm install
+        working-directory: week6/frontend
+        run: npm install
 
       - name: Run frontend tests
-        run: |
-          cd frontend
-          npm test -- --watchAll=false
+        working-directory: week6/frontend
+        run: npm test -- --watchAll=false
 
       # 7. Deploy to Kubernetes
       - name: Set up kubectl
