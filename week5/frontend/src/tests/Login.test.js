@@ -155,8 +155,8 @@ describe("Login Page", () => {
   // Manually simulate logged in state
   localStorage.setItem("user", JSON.stringify({ id: "u123", role: "admin" }));
 
-  expect(screen.getByText(/Logged in as/i)).toBeInTheDocument();
-  expect(screen.getByText(/Role:/i)).toBeInTheDocument();
+  expect(screen.getByText(/✅ Logged in as/i)).toBeInTheDocument();
+  expect(screen.getByText(/🔑 Role:/i)).toBeInTheDocument();
 });
 
 
