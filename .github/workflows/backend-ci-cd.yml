@@ -62,14 +62,16 @@ jobs:
       # Build & push backend
       # ----------------------
       - name: Build & Push Backend
+        working-directory: week6/backend
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/week6-backend:latest week6/backend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/week6-backend:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/week6-backend:latest
 
       # ----------------------
       # Build & push frontend
       # ----------------------
       - name: Build & Push Frontend
+        working-directory: week6/frontend
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/week6-frontend:latest week6/frontend
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/week6-frontend:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/week6-frontend:latest
